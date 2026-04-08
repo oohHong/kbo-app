@@ -1,10 +1,7 @@
-// src/components/SearchScreen.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePlayerNav } from '../context/PlayerNavContext';
-import { PLAYERS_DB, PLAYER_SEARCH_LIST } from '../data/mockData';
 
-const QUICK_NAMES = ['안우진', '이정후', '황성빈', '홍창기', '임찬규', '양현종', '강백호', '박동원'];
-
+// 💡 개별 선수 행 컴포넌트 (DB 필드명에 맞춰 수정)
 function PlayerRow({ player, onClick }) {
   return (
     <div onClick={onClick} style={{
@@ -14,38 +11,49 @@ function PlayerRow({ player, onClick }) {
     }}>
       <div style={{
         width: 40, height: 40, borderRadius: '50%',
-        background: '#E1F5EE', display: 'flex', alignItems: 'center',
+        background: '#f0f4f8', display: 'flex', alignItems: 'center',
         justifyContent: 'center', fontSize: 14, fontWeight: 600,
-        color: '#0F6E56', flexShrink: 0,
+        color: '#4a5568', flexShrink: 0,
       }}>
         {player.name[0]}
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: '#000' }}>{player.name}</div>
         <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
-          {player.team} · {player.pos} · #{player.num}
+          {player.teamName} · {player.position} · #{player.backNum}
         </div>
       </div>
-      <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#D85A30' }}>
-          {player.isPitcher ? player.era : player.avg}
-        </div>
-        <div style={{ fontSize: 10, color: '#bbb', marginTop: 2 }}>
-          {player.isPitcher ? 'ERA' : '타율'}
-        </div>
+      <div style={{ textAlign: 'right', fontSize: 10, color: '#ccc' }}>
+        보기 ›
       </div>
-      <div style={{ fontSize: 13, color: '#ccc' }}>›</div>
     </div>
   );
 }
 
 export default function SearchScreen() {
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
   const { setSelectedPlayer } = usePlayerNav();
 
-  const results = query.trim().length > 0
-    ? PLAYER_SEARCH_LIST.filter(p => p.name.includes(query.trim()))
-    : [];
+  // 💡 검색어가 바뀔 때마다 API 호출 (디바운싱 적용하면 더 좋음)
+  useEffect(() => {
+    const searchPlayers = async () => {
+      if (query.trim().length === 0) {
+        setResults([]);
+        return;
+      }
+      try {
+        const res = await fetch(`http://localhost:5000/api/players/search?name=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setResults(data);
+      } catch (e) {
+        console.error("검색 에러:", e);
+      }
+    };
+
+    const timer = setTimeout(searchPlayers, 300); // 0.3초 대기 후 검색
+    return () => clearTimeout(timer);
+  }, [query]);
 
   return (
     <>
@@ -73,39 +81,24 @@ export default function SearchScreen() {
               }}
             />
             {query.length > 0 && (
-              <div onClick={() => setQuery('')} style={{ fontSize: 16, color: '#bbb', cursor: 'pointer', lineHeight: 1 }}>✕</div>
+              <div onClick={() => setQuery('')} style={{ fontSize: 16, color: '#bbb', cursor: 'pointer' }}>✕</div>
             )}
           </div>
         </div>
 
-        {query.trim().length > 0 ? (
-          <div style={{ padding: '12px 16px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {results.length === 0 ? (
+        <div style={{ padding: '12px 16px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {query.trim().length > 0 ? (
+            results.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px 0', color: '#bbb', fontSize: 13 }}>검색 결과가 없어요</div>
             ) : (
-              results.map(p => <PlayerRow key={p.name} player={p} onClick={() => setSelectedPlayer(p)} />)
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="section-title" style={{ marginTop: 16 }}>많이 찾는 선수</div>
-            <div className="quick-chips">
-              {QUICK_NAMES.map(name => (
-                <div key={name} className="quick-chip"
-                  onClick={() => PLAYERS_DB[name] && setSelectedPlayer(PLAYERS_DB[name])}>
-                  {name}
-                </div>
-              ))}
+              results.map(p => <PlayerRow key={p.playerId} player={p} onClick={() => setSelectedPlayer(p)} />)
+            )
+          ) : (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: '#ccc' }}>
+              <p style={{ fontSize: 13 }}>찾고 싶은 선수의 이름을 입력하세요</p>
             </div>
-            <div className="section-title" style={{ marginTop: 8 }}>전체 선수</div>
-            <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {PLAYER_SEARCH_LIST.map(p => (
-                <PlayerRow key={p.name} player={p} onClick={() => setSelectedPlayer(p)} />
-              ))}
-            </div>
-          </>
-        )}
-        <div style={{ height: 16 }} />
+          )}
+        </div>
       </div>
     </>
   );

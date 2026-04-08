@@ -1,4 +1,5 @@
 /* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,7 +8,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #f0f0f0;
   display: flex;
   justify-content: center;
@@ -402,3 +403,260 @@ body {
 .lineup-row__name { flex: 1; font-size: 13px; font-weight: 500; color: #000; }
 .lineup-row__avg { font-size: 12px; color: #888; }
 .lineup-row__arrow { font-size: 11px; color: #ccc; }
+
+/* 상단바 (화이트 배경 + 그린 포인트 바) */
+.topbar {
+  background: #ffffff; /* 다시 화이트로! */
+  padding: 24px 24px 18px; /* 여백 조금 더 줌 */
+  position: relative;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 💡 왼쪽 그린 포인트 바 */
+.topbar::before {
+  content: "";
+  position: absolute;
+  left: 16px; /* 이미지처럼 살짝 안으로 들여쓰기 */
+  top: 26px; /* 타이틀 높이에 맞춤 */
+  bottom: 22px; /* 서브타이틀 높이에 맞춤 */
+  width: 3px;
+  background: #1D9E75; /* 깔끔한 그린 */
+  border-radius: 2px;
+}
+
+.topbar__title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #1a1a1a; /* 글자는 다시 검정색으로 */
+  letter-spacing: -0.8px;
+  padding-left: 14px; /* 포인트 바와 글자 사이 간격 */
+  display: block;
+}
+
+.topbar__sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: #888888; /* 날짜는 부드러운 회색 */
+  padding-left: 14px; /* 포인트 바와 날짜 사이 간격 */
+  margin-top: 6px;
+  display: block;
+}
+
+/* 스코어보드 전용 (반응형) */
+.inning-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.inning-table {
+  width: 100%;
+  table-layout: fixed; /* 핵심: 모든 열의 너비를 균등하게 배분 */
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.inning-table th, .inning-table td {
+  text-align: center;
+  padding: 8px 2px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.inning-table th {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.inning-table td.team-name {
+  text-align: left;
+  font-weight: 700;
+  color: #1e293b;
+  width: 50px; /* 팀명 너비 고정 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inning-table .res-cell {
+  background: #f8fafb;
+  font-weight: 700;
+}
+
+.inning-table .res-cell.total {
+  color: #1d9e75; /* R(득점) 강조 */
+}
+
+/* 기존 record-card 디자인 유지 */
+.record-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+/* App.css (통합본 하단에 추가) */
+
+/* 🏆 경기 기록 컨테이너 */
+.record-container {
+  padding: 10px;
+}
+
+.record-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* 📊 가로 스크롤 테이블 래퍼 (모바일 대응) */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto; /* 가로 스크롤 허용 */
+  -webkit-overflow-scrolling: touch;
+  margin-top: 10px;
+}
+
+/* 📈 기록 테이블 공통 스타일 */
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 450px; /* 테이블 최소 너비 설정 (스크롤 유발) */
+  font-size: 13px;
+}
+
+.record-table thead th {
+  background: #f8fafb;
+  color: #64748b;
+  font-weight: 500;
+  padding: 10px 8px;
+  text-align: center;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.record-table tbody td {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+/* 🥇 특정 컬럼 스타일 */
+.record-table td.name {
+  text-align: left;
+  font-weight: 600;
+  color: #1a1a1a;
+  min-width: 80px;
+}
+
+.record-table td.bold {
+  font-weight: 700;
+  color: #1d9e75; /* RHEB 강조색 */
+}
+
+/* 📋 기타 기록 카드 */
+.etc-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.etc-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.etc-row:last-child {
+  border-bottom: none;
+}
+
+.etc-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.etc-value {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* 💡 기존 스타일 유지/보강 */
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+  padding-left: 4px;
+  border-left: 3px solid #1d9e75;
+}
+.inning-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.inning-table {
+  width: 100%;
+  table-layout: fixed; /* 핵심: 모든 열의 너비를 화면에 맞춰 강제 배분 */
+  border-collapse: collapse;
+  font-size: 11px; /* 모바일 대응을 위해 폰트 살짝 조정 */
+}
+
+.inning-table th, .inning-table td {
+  text-align: center;
+  padding: 8px 1px;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.inning-table th {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.inning-table td.team-name {
+  text-align: left;
+  font-weight: 700;
+  color: #1e293b;
+  width: 45px; /* 팀명 영역 최소화 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inning-table .res-cell {
+  background: #f8fafb;
+  font-weight: 700;
+  width: 28px; /* 결과(RHE) 영역 고정 */
+}
+
+.inning-table .res-cell.total {
+  color: #1d9e75; /* R(득점) 강조 */
+}
+
+/* 📊 투수/타자 기록 (기존 가로 스크롤 유지) */
+.record-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 16px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px; /* 데이터 보호를 위해 최소 너비 유지 */
+}
+/* ... 나머지 기존 스타일 ... */

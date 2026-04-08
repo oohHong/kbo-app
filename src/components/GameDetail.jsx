@@ -1,189 +1,212 @@
-// src/components/GameDetail.jsx
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TeamEmblem from './TeamEmblem';
 import { usePlayerNav } from '../context/PlayerNavContext';
-import { LINEUPS, PLAYERS_DB } from '../data/mockData';
 
-function FieldView({ teamKey, color, onPlayerClick }) {
-  const lineup = LINEUPS[teamKey];
-  if (!lineup) return <div style={{ padding: 16, color: '#aaa', fontSize: 13 }}>라인업 정보 없음</div>;
-
-  const f = lineup.field;
-  const pillCls = `tag-pill tag-pill--${color}`;
-
-  // 선수 태그 헬퍼: 데이터 있으면 커서 pointer
-  function Tag({ name, className = 'player-tag', style }) {
-    const hasData = !!PLAYERS_DB[name];
-    return (
-      <div
-        className={className}
-        style={{ ...style, cursor: hasData ? 'pointer' : 'default' }}
-        onClick={() => hasData && onPlayerClick(name)}
-      >
-        <div className={pillCls}>{name}</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="field-wrap">
-      <svg className="field-svg" viewBox="0 0 375 300" xmlns="http://www.w3.org/2000/svg">
-        <rect width="375" height="300" fill="#2d5a1b"/>
-        {[0,50,100,150,200,250].map(y => (
-          <rect key={y} x="0" y={y} width="375" height="25" fill="#336620" opacity="0.4"/>
-        ))}
-        <line x1="187" y1="278" x2="375" y2="145" stroke="#e8e0c8" strokeWidth="1.5" opacity="0.8"/>
-        <line x1="187" y1="278" x2="0"   y2="146" stroke="#e8e0c8" strokeWidth="1.5" opacity="0.8"/>
-        <polygon points="187,278 306,194 187,110 68,194" fill="#b8864e" opacity="0.95"/>
-        <polygon points="187,258 286,194 187,130 88,194" fill="#3a6b22"/>
-        <line x1="187" y1="278" x2="306" y2="194" stroke="#e8e0c8" strokeWidth="0.8" opacity="0.5"/>
-        <line x1="306" y1="194" x2="187" y2="110" stroke="#e8e0c8" strokeWidth="0.8" opacity="0.5"/>
-        <line x1="187" y1="110" x2="68"  y2="194" stroke="#e8e0c8" strokeWidth="0.8" opacity="0.5"/>
-        <line x1="68"  y1="194" x2="187" y2="278" stroke="#e8e0c8" strokeWidth="0.8" opacity="0.5"/>
-        <rect x="180" y="103" width="14" height="14" rx="2" fill="white"/>
-        <rect x="299" y="187" width="14" height="14" rx="2" fill="white"/>
-        <rect x="61"  y="187" width="14" height="14" rx="2" fill="white"/>
-        <polygon points="187,285 179,278 179,271 195,271 195,278" fill="white"/>
-        <circle cx="187" cy="194" r="10" fill="#c49a5a"/>
-        <circle cx="187" cy="194" r="2.5" fill="white"/>
-      </svg>
-      {/* 외야 */}
-      <Tag name={f.cf} style={{ left:'50%', top:'14%' }} />
-      <Tag name={f.lf} style={{ left:'19%', top:'23%' }} />
-      <Tag name={f.rf} style={{ left:'81%', top:'23%' }} />
-      {/* 내야 중간 */}
-      <Tag name={f.ss} style={{ left:'36%', top:'49%' }} />
-      <Tag name={f.b2} style={{ left:'64%', top:'49%' }} />
-      {/* 투수 */}
-      <Tag name={f.p}  style={{ left:'50%', top:'63%' }} />
-      {/* 3루수: 베이스 왼쪽 옆 */}
-      <Tag name={f.b3} className="player-tag player-tag--left"  style={{ left:'18.1%', top:'64.7%' }} />
-      {/* 1루수: 베이스 오른쪽 옆 */}
-      <Tag name={f.b1} className="player-tag player-tag--right" style={{ left:'81.9%', top:'64.7%' }} />
-      {/* 포수: 홈 아래 */}
-      <Tag name={f.c}  className="player-tag player-tag--below" style={{ left:'50%', top:'92.7%' }} />
-    </div>
-  );
-}
+const TEAM_THEMES = {
+  'LG': { primary: '#C30452', bg: '#FFF0F5' },
+  'kt': { primary: '#000000', bg: '#f1f1f1' },
+  'SSG': { primary: '#CE0E2D', bg: '#FFF5F5' },
+  'NC': { primary: '#315288', bg: '#F0F4F8' },
+  '두산': { primary: '#131230', bg: '#F0F0F5' },
+  'KIA': { primary: '#EA0029', bg: '#FFF5F5' },
+  '롯데': { primary: '#041E42', bg: '#F0F0F5' },
+  '삼성': { primary: '#074CA1', bg: '#F0F8FF' },
+  '한화': { primary: '#FF6600', bg: '#FFF8F0' },
+  '키움': { primary: '#820024', bg: '#F5F0F2' },
+};
 
 export default function GameDetail({ game, onBack }) {
-  const [seg, setSeg] = useState('home');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { setSelectedPlayer } = usePlayerNav();
 
-  const homeTeamKey = game.home === 'LG' ? 'LG' : game.home === 'KT' ? 'KT' : null;
-  const awayTeamKey = game.away === 'LG' ? 'LG' : game.away === 'KT' ? 'KT' : null;
-  const homeLineup = homeTeamKey ? LINEUPS[homeTeamKey] : null;
-  const awayLineup = awayTeamKey ? LINEUPS[awayTeamKey] : null;
+  if (!game) return null;
 
-  function handlePlayerClick(name) {
-    const detail = PLAYERS_DB[name];
-    if (detail) setSelectedPlayer(detail);
-  }
+  const isDone = game.status === 'done';
+  const getTheme = (teamName) => {
+    if (!teamName) return { primary: '#475569', bg: '#f8fafb' };
+    for (const key in TEAM_THEMES) {
+      if (teamName.includes(key)) return TEAM_THEMES[key];
+    }
+    return { primary: '#475569', bg: '#f8fafb' };
+  };
+
+  const awayTheme = getTheme(game.away);
+  const homeTheme = getTheme(game.home);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const endpoint = isDone ? 'record' : 'lineup';
+        const response = await fetch(`http://localhost:5000/api/matches/${game.matchId}/${endpoint}`);
+        const result = await response.json();
+        if (response.ok) setData(result);
+      } catch (error) { console.error(error); } finally { setLoading(false); }
+    };
+    fetchData();
+  }, [game.matchId, isDone]);
+
+  const handlePlayerClick = (playerName, teamName) => {
+    if (!playerName || playerName === '-') return;
+    setSelectedPlayer({ name: playerName, teamName: teamName });
+  };
+
+  // 투수 결과 색상
+  const getWlsColor = (wls) => {
+    switch (wls) {
+      case '승': return '#007bff';
+      case '패': return '#dc3545';
+      case '홀': return '#28a745';
+      case '세': return '#ffc107';
+      default: return '#94a3b8';
+    }
+  };
+
+  // 기록 테이블 렌더러
+  const renderBoxscore = (title, headers, rows, type, teamName) => (
+    <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #eee' }}>
+      <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '12px', borderLeft: '4px solid #333', paddingLeft: '8px' }}>{title}</div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #eee', color: '#888' }}>
+              {headers.map(h => <th key={h} style={{ padding: '8px 4px', textAlign: 'center' }}>{h}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {rows?.map((row, i) => (
+              <tr key={i} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                <td onClick={() => handlePlayerClick(row.name, teamName)} style={{ padding: '10px 4px', fontWeight: 700, cursor: 'pointer', color: '#1a202c', width: '60px' }}>{row.name}</td>
+                {type === 'pitcher' ? (
+                  <>
+                    <td style={{ textAlign: 'center', color: getWlsColor(row.wls), fontWeight: 800 }}>{row.wls || '-'}</td>
+                    <td style={{ textAlign: 'center' }}>{row.inn}</td>
+                    <td style={{ textAlign: 'center' }}>{row.pa}</td>
+                    <td style={{ textAlign: 'center' }}>{row.bf}</td>
+                    <td style={{ textAlign: 'center' }}>{row.hit}</td>
+                    <td style={{ textAlign: 'center' }}>{row.kk}</td>
+                    <td style={{ textAlign: 'center' }}>{row.r}</td>
+                  </>
+                ) : (
+                  <>
+                    <td style={{ textAlign: 'center' }}>{row.batOrder}</td>
+                    <td style={{ textAlign: 'center' }}>{row.ab}</td>
+                    <td style={{ textAlign: 'center' }}>{row.hit}</td>
+                    <td style={{ textAlign: 'center' }}>{row.rbi}</td>
+                    <td style={{ textAlign: 'center' }}>{row.run}</td>
+                    <td style={{ textAlign: 'center' }}>{row.hra}</td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      <div className="detail-topbar">
-        <div className="back-btn" onClick={onBack}>
-          <svg width="10" height="14" viewBox="0 0 10 16" fill="none" stroke="#666" strokeWidth="1.8">
-            <path d="M8 2L2 8L8 14"/>
-          </svg>
-        </div>
-        {/* 홈 엠블럼 + 팀명 + 스코어 + 원정 */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <TeamEmblem teamKey={game.home} size={30} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 600, color: '#000' }}>
-              {game.home} vs {game.away}
-              {game.status === 'live' && (
-                <span style={{ fontSize: 11, color: '#0F6E56', fontWeight: 400, marginLeft: 6 }}>
-                  LIVE {game.inning}
-                </span>
-              )}
-            </div>
-            <div style={{ fontSize: 11, color: '#888' }}>{game.stadium}</div>
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 5000,
+      display: 'flex', justifyContent: 'center'
+    }}>
+      <div style={{
+        width: '100%', maxWidth: '450px', height: '100%', backgroundColor: '#f8fafb',
+        display: 'flex', flexDirection: 'column', boxShadow: '0 0 30px rgba(0,0,0,0.3)',
+        position: 'relative', overflow: 'hidden'
+      }}>
+        
+        {/* 탑바 */}
+        <div style={{
+          display: 'flex', alignItems: 'center', padding: '0 16px', height: '54px',
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, color: '#fff'
+        }}>
+          <button onClick={onBack} style={{
+            background: 'rgba(255,255,255,0.2)', border: 'none', width: '32px', height: '32px',
+            borderRadius: '50%', color: '#fff', cursor: 'pointer', fontSize: '18px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>←</button>
+          <div style={{ fontSize: '15px', fontWeight: 700, marginLeft: '12px', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+            {isDone ? '경기 결과 리포트' : '라인업 분석'}
           </div>
-          <TeamEmblem teamKey={game.away} size={30} />
         </div>
-      </div>
 
-      <div className="seg-row">
-        <button className={`seg${seg === 'pitcher' ? ' seg--active' : ''}`} onClick={() => setSeg('pitcher')}>선발 투수</button>
-        <button className={`seg${seg === 'home' ? ' seg--active' : ''}`} onClick={() => setSeg('home')}>{game.home} 라인업</button>
-        <button className={`seg${seg === 'away' ? ' seg--active' : ''}`} onClick={() => setSeg('away')}>{game.away} 라인업</button>
-      </div>
-
-      <div className="screen">
-        {seg === 'pitcher' && (
-          <div style={{ padding: 16 }}>
-            <div style={{ background:'#fff', border:'0.5px solid rgba(0,0,0,0.1)', borderRadius:14, padding:16 }}>
-              <div style={{ fontSize:11, fontWeight:600, color:'#888', marginBottom:14 }}>오늘의 선발 투수</div>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-around' }}>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:15, fontWeight:600 }}>{game.homeP}</div>
-                  <div style={{ fontSize:11, color:'#888', marginTop:4 }}>ERA 3.21 · 6승 2패</div>
-                  <div style={{ display:'inline-block', marginTop:6, background:'#E1F5EE', fontSize:10, color:'#0F6E56', padding:'2px 10px', borderRadius:8, fontWeight:600 }}>{game.home}</div>
-                </div>
-                <div style={{ fontSize:13, color:'#ccc' }}>vs</div>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:15, fontWeight:600 }}>{game.awayP}</div>
-                  <div style={{ fontSize:11, color:'#888', marginTop:4 }}>ERA 4.05 · 4승 3패</div>
-                  <div style={{ display:'inline-block', marginTop:6, background:'#fde8e8', fontSize:10, color:'#8B0000', padding:'2px 10px', borderRadius:8, fontWeight:600 }}>{game.away}</div>
-                </div>
+        {/* 🏟️ 스코어보드 */}
+        <div style={{
+          background: `linear-gradient(135deg, ${awayTheme.primary} 0%, ${homeTheme.primary} 100%)`,
+          padding: '75px 20px 35px', textAlign: 'center', color: '#fff'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ background: '#fff', borderRadius: '50%', padding: '4px', display: 'flex' }}><TeamEmblem teamKey={game.away} size={48} /></div>
+              <div style={{ fontSize: '17px', fontWeight: 900, marginTop: '10px' }}>{game.away}</div>
+            </div>
+            <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '5px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <span style={{ fontSize: '44px', fontWeight: 900 }}>{game.awayScore}</span>
+                <span style={{ fontSize: '24px', opacity: 0.5 }}>:</span>
+                <span style={{ fontSize: '44px', fontWeight: 900 }}>{game.homeScore}</span>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '4px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, marginTop: '12px' }}>
+                {game.stadium} • {game.time}
               </div>
             </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ background: '#fff', borderRadius: '50%', padding: '4px', display: 'flex' }}><TeamEmblem teamKey={game.home} size={48} /></div>
+              <div style={{ fontSize: '17px', fontWeight: 900, marginTop: '10px' }}>{game.home}</div>
+            </div>
           </div>
-        )}
+        </div>
 
-        {seg === 'home' && (
-          <>
-            <FieldView teamKey={homeTeamKey} color="green" onPlayerClick={handlePlayerClick} />
-            {homeLineup && (
-              <div className="lineup-card">
-                <div className="lineup-card__head">{game.home} 타순</div>
-                {homeLineup.home.map((p, i) => (
-                  <div
-                    key={i} className="lineup-row"
-                    onClick={() => handlePlayerClick(p.name)}
-                    style={{ cursor: PLAYERS_DB[p.name] ? 'pointer' : 'default' }}
-                  >
-                    <span className="lineup-row__num">{i + 1}</span>
-                    <span className="pos-badge">{p.pos}</span>
-                    <span className="lineup-row__name">{p.name}</span>
-                    <span className="lineup-row__avg">{p.avg}</span>
-                    <span className="lineup-row__arrow">›</span>
+        {/* 본문 스크롤 영역 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', marginTop: '50px', color: '#94a3b8' }}>데이터를 불러오는 중...</div>
+          ) : isDone && data ? (
+            /* 💡 [수정] 지난 경기 결과 화면 (데이터 구조 대응) */
+            <div className="record-container">
+              {renderBoxscore(`${game.away} 투수`, ["성명","결과","이닝","타자","투구","안타","삼진","실점"], data.pitchers?.away, 'pitcher', game.away)}
+              {renderBoxscore(`${game.home} 투수`, ["성명","결과","이닝","타자","투구","안타","삼진","실점"], data.pitchers?.home, 'pitcher', game.home)}
+              {renderBoxscore(`${game.away} 타자`, ["성명","타순","타수","안타","타점","득점","타율"], data.batters?.away, 'batter', game.away)}
+              {renderBoxscore(`${game.home} 타자`, ["성명","타순","타수","안타","타점","득점","타율"], data.batters?.home, 'batter', game.home)}
+            </div>
+          ) : data ? (
+            /* 📋 경기 전 라인업 화면 */
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ background: awayTheme.bg, borderRadius: '16px', padding: '16px', border: `1px solid ${awayTheme.primary}22` }}>
+                <div style={{ color: awayTheme.primary, fontWeight: 900, fontSize: '13px', marginBottom: '12px' }}>AWAY</div>
+                <div onClick={() => handlePlayerClick(data.away.pitcher, data.away.teamName)} style={{ background: '#fff', padding: '10px', borderRadius: '10px', marginBottom: '12px', cursor: 'pointer', border: `1px solid ${awayTheme.primary}44` }}>
+                  <div style={{ fontSize: '9px', color: awayTheme.primary }}>STARTING PITCHER</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800 }}>{data.away.pitcher} ›</div>
+                </div>
+                {data.away.batters?.map((b, i) => (
+                  <div key={i} onClick={() => handlePlayerClick(b.name, data.away.teamName)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer' }}>
+                    <span style={{ fontSize: '11px', color: awayTheme.primary, fontWeight: 700, width: '15px' }}>{b.order}</span>
+                    <span style={{ fontSize: '10px', background: '#fff', border: '1px solid #eee', padding: '2px 4px', borderRadius: '4px' }}>{b.pos}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{b.name}</span>
                   </div>
                 ))}
               </div>
-            )}
-            <div style={{ height: 16 }} />
-          </>
-        )}
-
-        {seg === 'away' && (
-          <>
-            <FieldView teamKey={awayTeamKey} color="red" onPlayerClick={handlePlayerClick} />
-            {awayLineup && (
-              <div className="lineup-card">
-                <div className="lineup-card__head">{game.away} 타순</div>
-                {awayLineup.away.map((p, i) => (
-                  <div
-                    key={i} className="lineup-row"
-                    onClick={() => handlePlayerClick(p.name)}
-                    style={{ cursor: PLAYERS_DB[p.name] ? 'pointer' : 'default' }}
-                  >
-                    <span className="lineup-row__num">{i + 1}</span>
-                    <span className="pos-badge pos-badge--red">{p.pos}</span>
-                    <span className="lineup-row__name">{p.name}</span>
-                    <span className="lineup-row__avg">{p.avg}</span>
-                    <span className="lineup-row__arrow">›</span>
+              <div style={{ background: homeTheme.bg, borderRadius: '16px', padding: '16px', border: `1px solid ${homeTheme.primary}22` }}>
+                <div style={{ color: homeTheme.primary, fontWeight: 900, fontSize: '13px', marginBottom: '12px' }}>HOME</div>
+                <div onClick={() => handlePlayerClick(data.home.pitcher, data.home.teamName)} style={{ background: '#fff', padding: '10px', borderRadius: '10px', marginBottom: '12px', cursor: 'pointer', border: `1px solid ${homeTheme.primary}44` }}>
+                  <div style={{ fontSize: '9px', color: homeTheme.primary }}>STARTING PITCHER</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800 }}>{data.home.pitcher} ›</div>
+                </div>
+                {data.home.batters?.map((b, i) => (
+                  <div key={i} onClick={() => handlePlayerClick(b.name, data.home.teamName)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer' }}>
+                    <span style={{ fontSize: '11px', color: homeTheme.primary, fontWeight: 700, width: '15px' }}>{b.order}</span>
+                    <span style={{ fontSize: '10px', background: '#fff', border: '1px solid #eee', padding: '2px 4px', borderRadius: '4px' }}>{b.pos}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{b.name}</span>
                   </div>
                 ))}
               </div>
-            )}
-            <div style={{ height: 16 }} />
-          </>
-        )}
+            </div>
+          ) : null}
+        </div>
       </div>
-    </>
+    </div>
   );
 }

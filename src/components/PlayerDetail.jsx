@@ -1,202 +1,86 @@
-// src/components/PlayerDetail.jsx
-import { useState } from 'react';
-
-function StatChip({ label, value, hot }) {
-  return (
-    <div style={{ flex: 1, background: '#f5f5f5', borderRadius: 10, padding: '8px 0', textAlign: 'center' }}>
-      <div style={{ fontSize: 10, color: '#888', marginBottom: 3 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 600, color: hot ? '#D85A30' : '#000' }}>{value}</div>
-    </div>
-  );
-}
-
-function SeasonTab({ player }) {
-  const s = player.season;
-  const rows = player.isPitcher
-    ? [
-        { label: 'ERA', value: s.era },
-        { label: '승', value: s.wins },
-        { label: '패', value: s.losses },
-        { label: '세이브', value: s.saves },
-        { label: '홀드', value: s.holds },
-        { label: '이닝', value: s.innings },
-        { label: '삼진', value: s.so },
-        { label: '볼넷', value: s.bb },
-        { label: 'WHIP', value: s.whip },
-        { label: '등판', value: `${s.games}경기` },
-      ]
-    : [
-        { label: '타율', value: s.avg },
-        { label: '출루율', value: s.obp },
-        { label: 'OPS', value: s.ops },
-        { label: '슬러깅', value: s.slg },
-        { label: '홈런', value: s.hr },
-        { label: '타점', value: s.rbi },
-        { label: '안타', value: s.hits },
-        { label: '도루', value: s.sb },
-        { label: '타석', value: s.ab },
-        { label: '출장', value: `${s.games}경기` },
-      ];
-  return (
-    <div style={{ padding: '12px 16px' }}>
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '4px 14px' }}>
-        {rows.map((r, i) => (
-          <div key={i} style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '10px 0',
-            borderBottom: i < rows.length - 1 ? '0.5px solid rgba(0,0,0,0.06)' : 'none',
-          }}>
-            <span style={{ fontSize: 13, color: '#888' }}>{r.label}</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#000' }}>{r.value}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ height: 16 }} />
-    </div>
-  );
-}
-
-function RecentTab({ player }) {
-  return (
-    <div style={{ padding: '12px 16px' }}>
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden' }}>
-        <div style={{ background: '#f9f9f9', padding: '8px 14px', fontSize: 11, fontWeight: 600, color: '#888', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
-          최근 5경기
-        </div>
-        {player.recent.map((r, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', padding: '10px 14px', gap: 8,
-            borderBottom: i < player.recent.length - 1 ? '0.5px solid rgba(0,0,0,0.06)' : 'none',
-          }}>
-            <span style={{ width: 36, fontSize: 11, color: '#bbb', flexShrink: 0 }}>{r.date}</span>
-            <span style={{ width: 60, fontSize: 12, color: '#888', flexShrink: 0 }}>{r.opp}</span>
-            <span style={{ flex: 1, fontSize: 13, color: r.good ? '#D85A30' : '#555', fontWeight: r.good ? 600 : 400 }}>{r.result}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ height: 16 }} />
-    </div>
-  );
-}
-
-function PrevTab({ player }) {
-  const colStyle = (i) => ({
-    flex: i === 0 ? '0 0 44px' : 1,
-    fontSize: 11, color: '#aaa',
-    textAlign: i > 0 ? 'center' : 'left',
-  });
-
-  const pitcherHeaders = ['연도', 'ERA', '승', '패', '이닝', '삼진'];
-  const batterHeaders  = ['연도', '타율', '홈런', '타점', '안타', '경기'];
-
-  return (
-    <div style={{ padding: '12px 16px' }}>
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden' }}>
-        <div style={{ background: '#f9f9f9', padding: '8px 14px', fontSize: 11, fontWeight: 600, color: '#888', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
-          연도별 누적 기록
-        </div>
-        {/* 컬럼 헤더 */}
-        <div style={{ display: 'flex', padding: '7px 14px', background: '#fcfcfc', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
-          {(player.isPitcher ? pitcherHeaders : batterHeaders).map((h, i) => (
-            <span key={i} style={colStyle(i)}>{h}</span>
-          ))}
-        </div>
-        {/* 데이터 행 */}
-        {player.prev.map((p, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', padding: '10px 14px',
-            borderBottom: i < player.prev.length - 1 ? '0.5px solid rgba(0,0,0,0.06)' : 'none',
-          }}>
-            <span style={{ flex: '0 0 44px', fontSize: 13, fontWeight: 600, color: '#000' }}>{p.year}</span>
-            {player.isPitcher ? (
-              <>
-                <span style={{ flex: 1, fontSize: 13, color: '#D85A30', fontWeight: 600, textAlign: 'center' }}>{p.era}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.wins}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.losses}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.innings}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.so}</span>
-              </>
-            ) : (
-              <>
-                <span style={{ flex: 1, fontSize: 13, color: '#D85A30', fontWeight: 600, textAlign: 'center' }}>{p.avg}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.hr}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.rbi}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.hits}</span>
-                <span style={{ flex: 1, fontSize: 13, color: '#555', textAlign: 'center' }}>{p.games}</span>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      <div style={{ height: 16 }} />
-    </div>
-  );
-}
+import { createPortal } from 'react-dom';
 
 export default function PlayerDetail({ player, onBack }) {
-  const [tab, setTab] = useState('season');
+  if (!player) return null;
 
-  return (
-    <>
-      <div className="detail-topbar">
-        <div className="back-btn" onClick={onBack}>
-          <svg width="10" height="14" viewBox="0 0 10 16" fill="none" stroke="#666" strokeWidth="1.8">
-            <path d="M8 2L2 8L8 14"/>
-          </svg>
-        </div>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: '#000' }}>{player.name}</div>
-          <div style={{ fontSize: 11, color: '#888' }}>{player.team} · {player.pos}</div>
-        </div>
-      </div>
+  const pid = player?.playerId;
+  const naverUrl = `https://m.sports.naver.com/player/index?category=kbo&playerId=${pid}&tab=record`;
 
-      {/* 선수 헤더 */}
-      <div style={{ background: '#fff', padding: '14px 16px 16px', borderBottom: '0.5px solid rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+  const openNaverRecord = () => {
+    if (!pid) {
+      alert("선수 고유 ID가 없어 기록을 불러올 수 없습니다.");
+      return;
+    }
+    window.open(naverUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  return createPortal(
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0, // 💡 좌우 대칭을 위해 추가
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)', // 💡 배경을 살짝 어둡게 하면 더 앱 같음
+      zIndex: 9999,
+      display: 'flex',
+      justifyContent: 'center', // 💡 가로 중앙 정렬
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '450px', // 👈 우리 앱의 모바일 최대 너비 (네 설정에 맞춰 조절해!)
+        height: '100%',
+        backgroundColor: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 0 20px rgba(0,0,0,0.2)', // 💡 그림자 살짝 주면 입체감 폭발
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* --- 여기부터 상단 탑바 --- */}
+        <div className="detail-topbar" style={{ borderBottom: '1px solid #eee', flexShrink: 0 }}>
+          <div className="back-btn" onClick={onBack}>
+            <svg width="10" height="14" viewBox="0 0 10 16" fill="none" stroke="#333" strokeWidth="1.8">
+              <path d="M8 2L2 8L8 14"/>
+            </svg>
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700 }}>선수 정보</div>
+        </div>
+
+        {/* --- 선수 프로필 카드 --- */}
+        <div style={{ padding: '30px 20px', textAlign: 'center', background: '#f8f9fa', flexShrink: 0 }}>
           <div style={{
-            width: 52, height: 52, borderRadius: '50%',
-            background: '#E1F5EE', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: 18, fontWeight: 600, color: '#0F6E56', flexShrink: 0,
+            width: 80, height: 80, borderRadius: '50%',
+            background: '#e2e8f0', display: 'inline-flex', alignItems: 'center',
+            justifyContent: 'center', fontSize: 32, fontWeight: 800, color: '#4a5568',
+            marginBottom: 15, border: '3px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
           }}>
-            {player.name[0]}
+            {player.name ? player.name[0] : '?'}
           </div>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: '#000' }}>{player.name}</div>
-            <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>
-              {player.team} · {player.pos} · #{player.num}
-            </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#1a202c' }}>
+            {player.name} <span style={{ fontSize: 16, color: '#a0aec0', fontWeight: 400 }}>#{player.backNum}</span>
+          </div>
+          <div style={{ fontSize: 14, color: '#718096', marginTop: 8 }}>
+            {player.teamName} · {player.position}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {player.isPitcher ? (
-            <>
-              <StatChip label="ERA" value={player.era} hot />
-              <StatChip label="승" value={player.wins} />
-              <StatChip label="패" value={player.losses} />
-              <StatChip label="이닝" value={player.innings} />
-            </>
-          ) : (
-            <>
-              <StatChip label="타율" value={player.avg} hot />
-              <StatChip label="홈런" value={player.hr} />
-              <StatChip label="타점" value={player.rbi} />
-              <StatChip label="출루율" value={player.obp} />
-            </>
-          )}
+
+        {/* --- 액션 영역 --- */}
+        <div style={{ flex: 1, padding: '40px 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: 15, color: '#4a5568', marginBottom: 30 }}>기록을 확인하시겠습니까?</p>
+          <button onClick={openNaverRecord} style={{
+             width: '100%', maxWidth: 280, padding: '16px', backgroundColor: '#00c73c', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer'
+          }}>
+            실시간 기록실 바로가기
+          </button>
+          <button onClick={onBack} style={{ 
+             marginTop: 15, width: '100%', maxWidth: 280, padding: '14px', backgroundColor: 'transparent', color: '#a0aec0', border: '1px solid #e2e8f0', borderRadius: 12, cursor: 'pointer'
+          }}>
+            이전으로
+          </button>
         </div>
       </div>
-
-      <div className="seg-row">
-        <button className={`seg${tab === 'season' ? ' seg--active' : ''}`} onClick={() => setTab('season')}>2025 시즌</button>
-        <button className={`seg${tab === 'recent' ? ' seg--active' : ''}`} onClick={() => setTab('recent')}>최근 경기</button>
-        <button className={`seg${tab === 'prev'   ? ' seg--active' : ''}`} onClick={() => setTab('prev')}>이전 시즌</button>
-      </div>
-
-      <div className="screen">
-        {tab === 'season' && <SeasonTab player={player} />}
-        {tab === 'recent' && <RecentTab player={player} />}
-        {tab === 'prev'   && <PrevTab player={player} />}
-      </div>
-    </>
+    </div>,
+    document.body
   );
 }

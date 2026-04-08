@@ -323,4 +323,17 @@ export const PLAYERS_DB = {
   },
 };
 
+// 팀별 컬러 데이터 (예시)
+const TEAM_COLORS = {
+  'LG 트윈스': '#C30452',
+  '한화 이글스': '#FF6600',
+  '삼성 라이온즈': '#074CA1',
+  'SSG 랜더스': '#CE0E2D',
+  'NC 다이노스': '#315288',
+  'kt wiz': '#000000',
+  '롯데 자이언츠': '#041E42',
+  'KIA 타이거즈': '#EA0029',
+  '두산 베어스': '#131230',
+  '키움 히어로즈': '#820024',
+};
 export const PLAYER_SEARCH_LIST = Object.values(PLAYERS_DB);
