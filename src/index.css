@@ -1,0 +1,404 @@
+/* src/index.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* 모바일에서는 전체화면, PC에서는 폰 프레임 */
+#root {
+  width: 100%;
+  max-width: 430px;
+  background: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 공통 */
+.screen {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 상단바 */
+.status-bar {
+  background: #fff;
+  padding: 10px 16px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar {
+  background: #fff;
+  padding: 8px 16px 12px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.1);
+}
+
+.topbar__title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #000;
+}
+
+.topbar__sub {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* 날짜 스트립 */
+.date-strip {
+  background: #fff;
+  border-bottom: 0.5px solid rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.date-strip__nav {
+  width: 32px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.date-strip__scroll {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 8px 0;
+  scrollbar-width: none;
+}
+.date-strip__scroll::-webkit-scrollbar { display: none; }
+
+.date-item {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 44px;
+}
+.date-item__day { font-size: 11px; color: #aaa; margin-bottom: 2px; }
+.date-item__num { font-size: 15px; font-weight: 500; color: #888; }
+.date-item--today .date-item__num { color: #000; font-weight: 600; }
+.date-item--active { background: #1D9E75; }
+.date-item--active .date-item__day,
+.date-item--active .date-item__num { color: #fff; }
+
+/* 경기 카드 */
+.scroll-content { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+.game-card {
+  background: #fff;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+.game-card:active { opacity: 0.85; }
+.game-card--kiwoom { border-color: #5DCAA5; border-width: 1.5px; }
+
+.game-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.pill--live { background: #E1F5EE; color: #0F6E56; }
+.pill--done { background: #f5f5f5; color: #aaa; }
+.pill--sched { background: #f5f5f5; color: #666; }
+.pill__inning { font-size: 10px; color: #aaa; }
+
+.teams-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.team-side { display: flex; align-items: center; gap: 8px; }
+.team-side--right { flex-direction: row-reverse; }
+
+.team-emblem {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #555;
+  flex-shrink: 0;
+}
+.team-info__name { font-size: 13px; font-weight: 600; color: #000; }
+.team-info__pitcher { font-size: 10px; color: #aaa; margin-top: 1px; }
+
+.score-block { display: flex; align-items: center; gap: 4px; }
+.score-block__num { font-size: 26px; font-weight: 600; color: #000; min-width: 22px; text-align: center; }
+.score-block__sep { font-size: 13px; color: #ccc; }
+.score-block__vs { font-size: 15px; font-weight: 500; color: #ccc; }
+
+.game-card__footer {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 0.5px solid rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: space-between;
+}
+.game-card__stadium { font-size: 11px; color: #aaa; }
+.game-card__link { font-size: 11px; color: #1D9E75; font-weight: 500; }
+
+.no-game { text-align: center; padding: 48px 0; color: #bbb; font-size: 13px; }
+
+/* 하단 탭 */
+.bottom-tab {
+  background: #fff;
+  border-top: 0.5px solid rgba(0,0,0,0.1);
+  display: flex;
+  flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px 6px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #aaa;
+}
+.tab-btn--active { color: #1D9E75; }
+.tab-btn__label { font-size: 10px; }
+.tab-btn--active .tab-btn__label { font-weight: 600; }
+
+/* 팀 그리드 */
+.team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 16px; }
+
+.team-card {
+  background: #fff;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+.team-card:active { opacity: 0.85; }
+.team-card--kiwoom { border-color: #5DCAA5; border-width: 1.5px; }
+
+.team-badge {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #555;
+  flex-shrink: 0;
+}
+.team-badge--kiwoom { background: #E1F5EE; color: #0F6E56; }
+
+.team-card__name { font-size: 13px; font-weight: 600; color: #000; }
+.team-card__meta { font-size: 11px; color: #888; margin-top: 2px; }
+
+/* 팀 상세 */
+.overlay {
+  position: fixed;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  bottom: 0;
+  background: #f5f5f5;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-topbar {
+  background: #fff;
+  padding: 10px 16px 12px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.back-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 0.5px solid rgba(0,0,0,0.12);
+  background: #f5f5f5;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.team-header {
+  background: #fff;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.team-header__badge {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #E1F5EE;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; color: #0F6E56;
+}
+.team-header__name { font-size: 17px; font-weight: 600; color: #000; }
+.team-header__meta { font-size: 12px; color: #888; margin-top: 3px; }
+
+/* 로스터 세그먼트 */
+.seg-row {
+  background: #fff;
+  border-bottom: 0.5px solid rgba(0,0,0,0.1);
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.seg-row::-webkit-scrollbar { display: none; }
+
+.seg {
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0,0,0,0.12);
+  color: #888;
+  cursor: pointer;
+  background: transparent;
+  white-space: nowrap;
+}
+.seg--active { background: #1D9E75; color: #fff; border-color: #1D9E75; font-weight: 600; }
+
+/* 선수 리스트 */
+.player-list { padding: 10px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+.player-row {
+  background: #fff;
+  border: 0.5px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.player-row--inactive { opacity: 0.55; }
+
+.player-num {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #E1F5EE;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #0F6E56;
+  flex-shrink: 0;
+}
+.player-num--gray { background: #f0f0f0; color: #888; }
+
+.player-row__name { flex: 1; font-size: 13px; font-weight: 500; color: #000; }
+.player-row__stat { font-size: 11px; color: #888; text-align: right; }
+
+.inactive-badge {
+  font-size: 10px;
+  background: #fde8e8;
+  color: #c0392b;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  padding: 10px 16px 4px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* 순위 */
+.standings-table { margin: 12px 16px; background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 14px; overflow: hidden; }
+.standings-header { background: #f5f5f5; padding: 8px 14px; display: flex; }
+.standings-row { display: flex; align-items: center; padding: 9px 14px; border-top: 0.5px solid rgba(0,0,0,0.06); font-size: 13px; }
+.standings-row--kiwoom { background: #f0faf6; }
+.col-rank { width: 28px; font-weight: 600; color: #888; font-size: 12px; }
+.col-rank--top { color: #1D9E75; }
+.col-team { flex: 1; font-weight: 500; }
+.col-team--kiwoom { color: #1D9E75; font-weight: 600; }
+.col-w, .col-l { width: 28px; text-align: center; color: #555; }
+.col-pct { width: 44px; text-align: center; color: #888; font-size: 12px; }
+
+/* 선수 검색 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0f0f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 12px 16px 0;
+}
+.search-bar__placeholder { font-size: 13px; color: #aaa; }
+
+.quick-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; }
+.quick-chip {
+  padding: 5px 14px;
+  background: #fff;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  border-radius: 20px;
+  font-size: 12px;
+  color: #000;
+  cursor: pointer;
+}
+
+/* 그라운드 뷰 */
+.field-wrap { position: relative; width: 100%; }
+.field-svg { width: 100%; display: block; }
+.player-tag { position: absolute; transform: translate(-50%, -50%); cursor: pointer; z-index: 2; }
+.player-tag--right { transform: translate(4px, -50%); }
+.player-tag--left { transform: translate(calc(-100% - 4px), -50%); }
+.player-tag--below { transform: translate(-50%, 4px); }
+.tag-pill {
+  font-size: 12px; font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.tag-pill--green { background: rgba(29,158,117,0.88); color: #fff; }
+.tag-pill--red { background: rgba(192,57,43,0.88); color: #fff; }
+
+/* 라인업 카드 */
+.lineup-card { margin: 12px 16px; background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 14px; overflow: hidden; }
+.lineup-card__head { padding: 8px 14px; border-bottom: 0.5px solid rgba(0,0,0,0.08); font-size: 11px; font-weight: 600; color: #888; background: #f9f9f9; }
+.lineup-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
+.lineup-row:last-child { border-bottom: none; }
+.lineup-row__num { width: 14px; font-size: 11px; color: #bbb; }
+.pos-badge { width: 30px; font-size: 10px; color: #0F6E56; background: #E1F5EE; padding: 2px 4px; border-radius: 4px; text-align: center; }
+.pos-badge--red { color: #8B0000; background: #fde8e8; }
+.lineup-row__name { flex: 1; font-size: 13px; font-weight: 500; color: #000; }
+.lineup-row__avg { font-size: 12px; color: #888; }
+.lineup-row__arrow { font-size: 11px; color: #ccc; }
